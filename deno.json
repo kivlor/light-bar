@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "update": "deno run --allow-env --allow-net --unsafely-ignore-certificate-errors update.ts"
+  }
+}

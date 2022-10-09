@@ -1,0 +1,9 @@
+.env
+.env.example
+
+.git
+.gitattributes
+.gitignore
+
+README.md
+compose.yaml
