@@ -4,7 +4,7 @@ export const sleep = (time) => {
 
 // adapted from:
 // https://stackoverflow.com/questions/22894498/philips-hue-convert-xy-from-api-to-hex-or-rgb#22918909
-export const xyToRgb = (x, y, brightness) => {
+export const xyToRgb = (x, y, brightness): number[] => {
   const z = 1.0 - x - y;
 
   const Y = brightness / 255.0;
