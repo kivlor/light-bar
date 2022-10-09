@@ -127,7 +127,7 @@ const getHueLightRgb = async (bridge, username, id) => {
   const { left, right } = await getHuePlayLights(bridge, username);
 
   while (true) {
-    console.log('updating lightbar...');
+    console.log('updating light-bar...');
 
     const leftRgb = await getHueLightRgb(bridge, username, left);
     const rightRgb = await getHueLightRgb(bridge, username, right);

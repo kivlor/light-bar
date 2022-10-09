@@ -1,7 +1,7 @@
 # Light Bar
 
-Periodicaly query and store hue play light cooulrs.
+Periodicaly query/store hue play light colours.
 
 ```
-deno task query
+deno task lightbar
 ```
