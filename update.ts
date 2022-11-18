@@ -1,4 +1,8 @@
+import { connect } from 'https://deno.land/x/redis/mod.ts';
 import { sleep, xyToRgb } from './utils.ts';
+
+const redisUrl = Deno.env.get('REDIS_URL') || 'redis://localhost:6379/0';
+const redis = await connect({ url: redisUrl });
 
 const getHueBridgeIp = async () => {
   const hueBridgeIp = Deno.env.get('HUE_BRIDGE_IP') || '';
@@ -112,32 +116,6 @@ const getHueLightRgb = async (bridge, username, id) => {
   return xyToRgb(x, y, brightness);
 }
 
-const writeColorsToKeyValueStore = async (colors) => {
-  const bucket = Deno.env.get('KVDB_BUCKET') || '';
-  const writeKey = Deno.env.get('KVDB_WRITE_KEY') || '';
-
-  if (!bucket) {
-    console.warn('bucket required to write values to kv store');
-    return;
-  }
-
-  const url = `https://kvdb.io/${bucket}`;
-  const headers = {
-    'Authorization': writeKey && `Bearer ${writeKey}`,
-    'Content-Type': 'application/json'
-  }
-  const body = JSON.stringify({
-    txn: Object.keys(colors).map((key) => ({ set: key, value: colors[key] }))
-  });
-
-  const response = await fetch(url, { method: 'POST', headers, body });
-  if (!response.ok) {
-    console.warn('unable to write values to kv store');
-  }
-
-  return;
-}
-
 (async () => {
   const bridge = await getHueBridgeIp();
   if (!bridge) {
@@ -157,10 +135,8 @@ const writeColorsToKeyValueStore = async (colors) => {
     const leftRgb = await getHueLightRgb(bridge, username, left);
     const rightRgb = await getHueLightRgb(bridge, username, right);
 
-    await writeColorsToKeyValueStore({
-      left: Object.values(leftRgb).join(','),
-      right: Object.values(rightRgb).join(',')
-    });
+    await redis.set('left', Object.values(leftRgb).join(','));
+    await redis.set('right', Object.values(rightRgb).join(','));
 
     await sleep(5000);
   }
