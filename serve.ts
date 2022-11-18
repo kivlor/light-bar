@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.159.0/http/server.ts";
 
 const redisHost = Deno.env.get("REDIS_HOST") || "localhost";
 const redisPort = Deno.env.get("REDIS_POST") || 6379;
-const redis = await connect({ host: redisHost, port: redisPort });
+const redis = await connect({ hostname: redisHost, port: redisPort });
 
 const statusRoute = new URLPattern({ pathname: "/status" });
 

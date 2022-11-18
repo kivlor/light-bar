@@ -3,7 +3,7 @@ import { sleep, xyToRgb } from "./utils.ts";
 
 const redisHost = Deno.env.get("REDIS_HOST") || "localhost";
 const redisPort = Deno.env.get("REDIS_POST") || 6379;
-const redis = await connect({ host: redisHost, port: redisPort });
+const redis = await connect({ hostname: redisHost, port: redisPort });
 
 const getHueBridgeIp = async () => {
   const hueBridgeIp = Deno.env.get("HUE_BRIDGE_IP") || "";
