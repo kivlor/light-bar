@@ -3,5 +3,7 @@
 Periodicaly query/store hue play light colours.
 
 ```
-deno task lightbar
+deno task serve
+deno task update
+
 ```
