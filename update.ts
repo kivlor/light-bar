@@ -1,53 +1,53 @@
-import { connect } from 'https://deno.land/x/redis/mod.ts';
-import { sleep, xyToRgb } from './utils.ts';
+import { connect } from "https://deno.land/x/redis/mod.ts";
+import { sleep, xyToRgb } from "./utils.ts";
 
-const redisUrl = Deno.env.get('REDIS_URL') || 'redis://localhost:6379/0';
+const redisUrl = Deno.env.get("REDIS_URL") || "redis://localhost:6379/0";
 const redis = await connect({ url: redisUrl });
 
 const getHueBridgeIp = async () => {
-  const hueBridgeIp = Deno.env.get('HUE_BRIDGE_IP') || '';
+  const hueBridgeIp = Deno.env.get("HUE_BRIDGE_IP") || "";
   if (hueBridgeIp) {
     return hueBridgeIp;
   }
 
-  const response = await fetch('https://discovery.meethue.com');
+  const response = await fetch("https://discovery.meethue.com");
   if (!response.ok) {
-    return '';
+    return "";
   }
 
-  const bridges = await response.json();  
+  const bridges = await response.json();
   const bridge = Array.isArray(bridges) && bridges[0];
   if (!bridge) {
-    return '';
+    return "";
   }
 
-  const { internalipaddress = '' } = bridge;
+  const { internalipaddress = "" } = bridge;
   return internalipaddress;
-}
+};
 
 const getHueUsername = async (bridge) => {
-  const hueUsername = Deno.env.get('HUE_USERNAME') || '';
+  const hueUsername = Deno.env.get("HUE_USERNAME") || "";
   if (hueUsername) {
     return hueUsername;
   }
 
-  let username = '';
+  let username = "";
   let tries = 0;
 
-  const appName = Deno.env.get('APP_NAME') || 'light-bar';
-  const appInstance = Deno.env.get('APP_INSTANCE') || 'local';
+  const appName = Deno.env.get("APP_NAME") || "light-bar";
+  const appInstance = Deno.env.get("APP_INSTANCE") || "local";
 
   const url = `http://${bridge}/api`;
   const body = JSON.stringify({
     devicetype: `${appName}#${appInstance}`,
-    generateclientkey: true
+    generateclientkey: true,
   });
 
-  while (username == '' && tries < 5) {
-    console.log('press button on bridge');
+  while (username == "" && tries < 5) {
+    console.log("press button on bridge");
     tries += 1;
 
-    const response = await fetch(url, { method: 'POST', body });
+    const response = await fetch(url, { method: "POST", body });
     if (!response.ok) {
       return;
     }
@@ -66,11 +66,13 @@ const getHueUsername = async (bridge) => {
   }
 
   return username;
-}
+};
 
 const getHuePlayLights = async (bridge, username) => {
   const url = `https://${bridge}/clip/v2/resource/light`;
-  const response = await fetch(url, { headers: { 'Hue-Application-Key': username } });
+  const response = await fetch(url, {
+    headers: { "Hue-Application-Key": username },
+  });
   if (!response.ok) {
     return;
   }
@@ -83,22 +85,24 @@ const getHuePlayLights = async (bridge, username) => {
   const playLights = lights.reduce((acc, item) => {
     const { id, metadata } = item;
     const { archetype, name } = metadata;
-    if (archetype !== 'hue_play') {
+    if (archetype !== "hue_play") {
       return acc;
     }
 
-    const key = name.match(/left/i) ? 'left' : 'right';
+    const key = name.match(/left/i) ? "left" : "right";
     acc[key] = id;
 
     return acc;
   }, {});
 
   return playLights;
-}
+};
 
 const getHueLightRgb = async (bridge, username, id) => {
   const url = `https://${bridge}/clip/v2/resource/light/${id}`;
-  const response = await fetch(url, { headers: { 'Hue-Application-Key': username } });
+  const response = await fetch(url, {
+    headers: { "Hue-Application-Key": username },
+  });
   if (!response.ok) {
     return;
   }
@@ -110,22 +114,22 @@ const getHueLightRgb = async (bridge, username, id) => {
   }
 
   const { color, dimming } = light;
-  const { xy: { x, y} } = color;
+  const { xy: { x, y } } = color;
   const { brightness } = dimming;
-  
+
   return xyToRgb(x, y, brightness);
-}
+};
 
 (async () => {
   const bridge = await getHueBridgeIp();
   if (!bridge) {
-    console.warn('unable to find bridge');
+    console.warn("unable to find bridge");
     return;
   }
 
   const username = await getHueUsername(bridge);
   if (!username) {
-    console.warn('unable to authenticate');
+    console.warn("unable to authenticate");
     return;
   }
 
@@ -135,8 +139,8 @@ const getHueLightRgb = async (bridge, username, id) => {
     const leftRgb = await getHueLightRgb(bridge, username, left);
     const rightRgb = await getHueLightRgb(bridge, username, right);
 
-    await redis.set('left', Object.values(leftRgb).join(','));
-    await redis.set('right', Object.values(rightRgb).join(','));
+    await redis.set("left", Object.values(leftRgb).join(","));
+    await redis.set("right", Object.values(rightRgb).join(","));
 
     await sleep(5000);
   }

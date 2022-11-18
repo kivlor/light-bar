@@ -1,8 +1,8 @@
-import { connect } from 'https://deno.land/x/redis/mod.ts';
+import { connect } from "https://deno.land/x/redis/mod.ts";
 import { serve } from "https://deno.land/std@0.159.0/http/server.ts";
 
-const port = Deno.env.get('PORT') || 8080;
-const redisUrl = Deno.env.get('REDIS_URL') || 'redis://localhost:6379/0';
+const port = Deno.env.get("PORT") || 8080;
+const redisUrl = Deno.env.get("REDIS_URL") || "redis://localhost:6379/0";
 const redis = await connect({ url: redisUrl });
 
 const statusRoute = new URLPattern({ pathname: "/status" });
@@ -10,7 +10,7 @@ const statusRoute = new URLPattern({ pathname: "/status" });
 const handler = (req: Request): Response => {
   const match = statusRoute.exec(req.url);
   if (match) {
-    return new Response('ok');
+    return new Response("ok");
   }
 
   let timer: number;
@@ -18,8 +18,8 @@ const handler = (req: Request): Response => {
   const body = new ReadableStream({
     async start(controller) {
       timer = setInterval(async () => {
-        const left = await redis.get('left');
-        const right = await redis.get('right');
+        const left = await redis.get("left");
+        const right = await redis.get("right");
 
         controller.enqueue(JSON.stringify({ left, right }));
       }, 5000);
@@ -34,6 +34,6 @@ const handler = (req: Request): Response => {
       "Content-Type": "text/plain; charset=utf-8",
     },
   });
-}
+};
 
 serve(handler, { port: parseInt(port, 10) });
