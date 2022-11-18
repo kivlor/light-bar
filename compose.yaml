@@ -12,6 +12,8 @@ services:
   serve:
     build: ./
     command: [ "deno", "task", "serve" ] 
+    depends_on:
+      - redis
     env_file: .env
     environment:
       - REDIS_URL=redis://redis:6379/0
@@ -21,6 +23,8 @@ services:
 
   update:
     build: ./
+    depends_on:
+      - redis
     env_file: .env
     environment:
       - REDIS_URL=redis://redis:6379/0
