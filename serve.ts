@@ -15,13 +15,21 @@ const handler = (req: Request): Response => {
 
   let timer: number;
 
+  const getLights = async () => {
+    const left = await redis.get("left");
+    const right = await redis.get("right");
+
+    return { left, right };
+  };
+
   const body = new ReadableStream({
     async start(controller) {
-      timer = setInterval(async () => {
-        const left = await redis.get("left");
-        const right = await redis.get("right");
+      const lights = await getLights();
+      controller.enqueue(JSON.stringify(lights));
 
-        controller.enqueue(JSON.stringify({ left, right }));
+      timer = setInterval(async () => {
+        const lights = await getLights();
+        controller.enqueue(JSON.stringify(lights));
       }, 5000);
     },
     cancel() {
