@@ -1,9 +1,9 @@
 import { connect } from "https://deno.land/x/redis@v0.27.4/mod.ts";
 import { serve } from "https://deno.land/std@0.159.0/http/server.ts";
 
-const port = Deno.env.get("PORT") || 8080;
-const redisUrl = Deno.env.get("REDIS_URL") || "redis://localhost:6379/0";
-const redis = await connect({ url: redisUrl });
+const redisHost = Deno.env.get("REDIS_HOST") || "localhost";
+const redisPort = Deno.env.get("REDIS_POST") || 6379;
+const redis = await connect({ host: redisHost, port: redisPort });
 
 const statusRoute = new URLPattern({ pathname: "/status" });
 
@@ -36,4 +36,5 @@ const handler = (req: Request): Response => {
   });
 };
 
-serve(handler, { port: parseInt(port, 10) });
+const servePort = Deno.env.get("PORT") || 8080;
+serve(handler, { port: parseInt(servePort, 10) });

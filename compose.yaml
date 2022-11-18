@@ -16,7 +16,8 @@ services:
       - redis
     env_file: .env
     environment:
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     ports:
       - 8080:8080
     restart: unless-stopped
@@ -27,5 +28,6 @@ services:
       - redis
     env_file: .env
     environment:
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     restart: unless-stopped
