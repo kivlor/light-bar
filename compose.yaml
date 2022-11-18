@@ -13,6 +13,8 @@ services:
     build: ./
     command: [ "deno", "task", "serve" ] 
     env_file: .env
+    env:
+      REDIS_URL: redis://redis:6379/0
     restart: unless-stopped
 
   update:
