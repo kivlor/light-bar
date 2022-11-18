@@ -1,4 +1,4 @@
-import { connect } from "https://deno.land/x/redis/mod.ts";
+import { connect } from "https://deno.land/x/redis@v0.27.4/mod.ts";
 import { serve } from "https://deno.land/std@0.159.0/http/server.ts";
 
 const port = Deno.env.get("PORT") || 8080;
