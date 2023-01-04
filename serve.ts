@@ -5,22 +5,21 @@ const redisHost = Deno.env.get("REDIS_HOST") || "localhost";
 const redisPort = Deno.env.get("REDIS_POST") || 6379;
 const redis = await connect({ hostname: redisHost, port: redisPort });
 
+const getLights = async () => {
+  const left = await redis.get("left");
+  const right = await redis.get("right");
+
+  return { left, right };
+};
+
 const statusRoute = new URLPattern({ pathname: "/status" });
 
 const handler = (req: Request): Response => {
-  const match = statusRoute.exec(req.url);
-  if (match) {
+  if (statusRoute.exec(req.url)) {
     return new Response("ok");
   }
 
   let timer: number;
-
-  const getLights = async () => {
-    const left = await redis.get("left");
-    const right = await redis.get("right");
-
-    return { left, right };
-  };
 
   const body = new ReadableStream({
     async start(controller) {
@@ -29,8 +28,10 @@ const handler = (req: Request): Response => {
 
       timer = setInterval(async () => {
         const lights = await getLights();
-        controller.enqueue(JSON.stringify(lights));
-      }, 5000);
+        controller.enqueue(
+          `event: update\ndata: ${JSON.stringify(lights)}\n\n`,
+        );
+      }, 1000);
     },
     cancel() {
       clearInterval(timer);
@@ -39,10 +40,11 @@ const handler = (req: Request): Response => {
 
   return new Response(body.pipeThrough(new TextEncoderStream()), {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Content-Type": "text/event-stream",
     },
   });
 };
 
-const servePort = Deno.env.get("PORT") || 8080;
+const servePort = Deno.env.get("PORT") || 9000;
 serve(handler, { port: parseInt(servePort, 10) });

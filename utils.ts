@@ -1,10 +1,10 @@
 export const sleep = (time) => {
   return new Promise((resolve) => setTimeout(resolve, time));
-}
+};
 
 // adapted from:
 // https://stackoverflow.com/questions/22894498/philips-hue-convert-xy-from-api-to-hex-or-rgb#22918909
-export const xyToRgb = (x, y, brightness): number[] => {
+export const xyToHex = (x, y, brightness) => {
   const z = 1.0 - x - y;
 
   const Y = brightness / 255.0;
@@ -19,9 +19,15 @@ export const xyToRgb = (x, y, brightness): number[] => {
   };
 
   // apply reverse gamma correction
-  rgb.red = rgb.red <= 0.0031308 ? 12.92 * rgb.red : (1.0 + 0.055) * Math.pow(rgb.red, (1.0 / 2.4)) - 0.055;
-  rgb.green = rgb.green <= 0.0031308 ? 12.92 * rgb.green : (1.0 + 0.055) * Math.pow(rgb.green, (1.0 / 2.4)) - 0.055;
-  rgb.blue = rgb.blue <= 0.0031308 ? 12.92 * rgb.blue : (1.0 + 0.055) * Math.pow(rgb.blue, (1.0 / 2.4)) - 0.055;
+  rgb.red = rgb.red <= 0.0031308
+    ? 12.92 * rgb.red
+    : (1.0 + 0.055) * Math.pow(rgb.red, 1.0 / 2.4) - 0.055;
+  rgb.green = rgb.green <= 0.0031308
+    ? 12.92 * rgb.green
+    : (1.0 + 0.055) * Math.pow(rgb.green, 1.0 / 2.4) - 0.055;
+  rgb.blue = rgb.blue <= 0.0031308
+    ? 12.92 * rgb.blue
+    : (1.0 + 0.055) * Math.pow(rgb.blue, 1.0 / 2.4) - 0.055;
 
   // divide by max
   const max = Math.max(rgb.red, rgb.green, rgb.blue);
@@ -38,5 +44,10 @@ export const xyToRgb = (x, y, brightness): number[] => {
   rgb.green = rgb.green < 0 ? 255 : Math.floor(rgb.green);
   rgb.blue = rgb.blue < 0 ? 255 : Math.floor(rgb.blue);
 
-  return rgb;
-}
+  const asHex = (stop) => {
+    const hex = stop.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  };
+
+  return "#" + asHex(rgb.red) + asHex(rgb.green) + asHex(rgb.blue);
+};

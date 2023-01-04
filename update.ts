@@ -1,5 +1,5 @@
 import { connect } from "https://deno.land/x/redis@v0.27.4/mod.ts";
-import { sleep, xyToRgb } from "./utils.ts";
+import { sleep, xyToHex } from "./utils.ts";
 
 const redisHost = Deno.env.get("REDIS_HOST") || "localhost";
 const redisPort = Deno.env.get("REDIS_POST") || 6379;
@@ -118,7 +118,7 @@ const getHueLightRgb = async (bridge, username, id) => {
   const { xy: { x, y } } = color;
   const { brightness } = dimming;
 
-  return xyToRgb(x, y, brightness);
+  return xyToHex(x, y, brightness);
 };
 
 (async () => {
@@ -137,12 +137,12 @@ const getHueLightRgb = async (bridge, username, id) => {
   const { left, right } = await getHuePlayLights(bridge, username);
 
   while (true) {
-    const leftRgb = await getHueLightRgb(bridge, username, left);
-    const rightRgb = await getHueLightRgb(bridge, username, right);
+    const leftHex = await getHueLightRgb(bridge, username, left);
+    const rightHex = await getHueLightRgb(bridge, username, right);
 
-    await redis.set("left", Object.values(leftRgb).join(","));
-    await redis.set("right", Object.values(rightRgb).join(","));
+    await redis.set("left", leftHex);
+    await redis.set("right", rightHex);
 
-    await sleep(5000);
+    await sleep(500);
   }
 })();
